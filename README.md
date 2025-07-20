@@ -3,7 +3,8 @@
 Este repositório contém os arquivos e scripts utilizados na série de vídeos sobre Kubernetes disponível no meu canal do YouTube. Aqui você vai encontrar tudo o que foi usado para criar um cluster Kubernetes completo, do zero, utilizando VirtualBox, RKE2, Helm e muito mais.
 
 A série é voltada para quem quer aprender Kubernetes de forma prática, descomplicada e mão na massa!
-📺 Vídeos da série
+
+## 📺 Vídeos da série
 
 [Parte 1 – História e Contexto](https://youtu.be/TKgHCqvQmqI?si=Q6s4av3MYN2dSAdm)
 
