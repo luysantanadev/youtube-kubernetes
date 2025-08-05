@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-unico
+  labels:
+    app: exemplo-simples
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: exemplo-simples
+  template:
+    metadata:
+      labels:
+        app: exemplo-simples
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: nginx
+          image: nginxinc/nginx-unprivileged:alpine3.22-perl
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          env:
+            - name: AMBIENTE
+              value: "producao"
+            - name: VERSAO
+              value: "1.0"
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL

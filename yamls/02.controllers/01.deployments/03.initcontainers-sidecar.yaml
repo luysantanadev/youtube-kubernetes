@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-init-sidecar
+  labels:
+    app: exemplo-init-sidecar
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exemplo-init-sidecar
+  template:
+    metadata:
+      labels:
+        app: exemplo-init-sidecar
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      
+      volumes:
+        - name: shared-data
+          emptyDir: {}
+
+      initContainers:
+        - name: init-criador-arquivo
+          image: busybox:latest
+          command: ["sh", "-c", "echo 'Olá, mundo!' > /usr/share/data/mensagem.txt"]
+          volumeMounts:
+            - name: shared-data
+              mountPath: /usr/share/data
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+
+      containers:
+        - name: app-principal
+          image: nginxinc/nginx-unprivileged:alpine3.22-perl
+          ports:
+            - name: http
+              containerPort: 80
+          volumeMounts:
+            - name: shared-data
+              mountPath: /usr/share/data
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: COMPONENTE
+              value: "principal"
+
+        - name: sidecar-logger
+          image: busybox:latest
+          command: ["sh", "-c", "while true; do cat /usr/share/data/mensagem.txt; sleep 10; done"]
+          volumeMounts:
+            - name: shared-data
+              mountPath: /usr/share/data
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "100m"
+            limits:
+              memory: "64Mi"
+              cpu: "200m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: COMPONENTE
+              value: "logger"

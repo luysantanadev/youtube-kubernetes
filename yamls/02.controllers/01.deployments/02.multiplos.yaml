@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-multiplo
+  labels:
+    app: exemplo-composto
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exemplo-composto
+  template:
+    metadata:
+      labels:
+        app: exemplo-composto
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 2000
+      containers:
+        - name: app-principal
+          image: nginxinc/nginx-unprivileged:alpine3.22-perl
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+            - name: https
+              containerPort: 443
+              protocol: TCP
+          env:
+            - name: AMBIENTE
+              value: "producao"
+            - name: COMPONENTE
+              value: "principal"
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+
+        - name: sidecar-logger
+          image: busybox:latest
+          command: ["sh", "-c", "while true; do echo log: $(date); sleep 5; done"]
+          env:
+            - name: COMPONENTE
+              value: "logger"
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "100m"
+            limits:
+              memory: "64Mi"
+              cpu: "200m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+
+        - name: sidecar-monitor
+          image: busybox:latest
+          command: ["sh", "-c", "while true; do echo monitorando...; sleep 10; done"]
+          env:
+            - name: COMPONENTE
+              value: "monitor"
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "100m"
+            limits:
+              memory: "64Mi"
+              cpu: "200m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
