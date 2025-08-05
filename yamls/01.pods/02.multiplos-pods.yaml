@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-multiplo
+  labels:
+    app: exemplo-composto
+spec:
+  containers:
+    - name: app-principal
+      image: nginx:latest
+      ports:
+        - containerPort: 80
+
+    - name: sidecar-logger
+      image: busybox:latest
+      command: ["sh", "-c", "while true; do echo log: $(date); sleep 5; done"]
+
+    - name: sidecar-monitor
+      image: busybox:latest
+      command: ["sh", "-c", "while true; do echo monitorando...; sleep 10; done"]
